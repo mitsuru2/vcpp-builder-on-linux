@@ -28,6 +28,9 @@ jobs:
           vcpkgJsonGlob: "sample-app/vcpkg.json"
           runVcpkgInstall: true
 
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
       - name: Build Visual Studio solution
         shell: pwsh
         run: |
