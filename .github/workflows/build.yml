@@ -26,7 +26,11 @@ jobs:
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgJsonGlob: "sample-app/vcpkg.json"
-          runVcpkgInstall: true
+
+      - name: Restore vcpkg dependencies
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows --x-install-root "sample-app/vcpkg_installed" --manifest-root "sample-app"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
