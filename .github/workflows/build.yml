@@ -1,0 +1,34 @@
+name: Build SmallChatBot
+
+on:
+  push:
+    paths:
+      - "sample-app/**"
+      - ".github/workflows/build.yml"
+  pull_request:
+    paths:
+      - "sample-app/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install vcpkg dependencies
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgJsonGlob: "sample-app/vcpkg.json"
+
+      - name: Build Visual Studio solution
+        shell: pwsh
+        run: |
+          $solution = "sample-app/SmallChatBot.sln"
+          msbuild $solution /m /p:Configuration=Release /p:Platform=x64 /p:VcpkgRoot="${{ runner.temp }}/vcpkg"

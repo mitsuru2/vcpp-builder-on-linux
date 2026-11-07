@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <PlatformToolset>v143</PlatformToolset>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <LanguageStandard>stdcpp17</LanguageStandard>
+    <WarningLevel>Level4</WarningLevel>
+    <TreatWarningAsError>true</TreatWarningAsError>
+    <ConformanceMode>true</ConformanceMode>
+    <CharacterSet>Unicode</CharacterSet>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' and '$(VCPKG_ROOT)' != ''">$(VCPKG_ROOT)</VcpkgRoot>
+  </PropertyGroup>
+</Project>
