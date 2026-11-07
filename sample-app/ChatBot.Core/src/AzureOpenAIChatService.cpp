@@ -11,17 +11,6 @@ namespace
 {
     using Json = nlohmann::json;
 
-    std::string RoleName(ChatBot::Model::ChatRole role)
-    {
-        switch (role)
-        {
-        case ChatBot::Model::ChatRole::System: return "system";
-        case ChatBot::Model::ChatRole::User: return "user";
-        case ChatBot::Model::ChatRole::Assistant: return "assistant";
-        default: throw std::invalid_argument("Unsupported chat message role.");
-        }
-    }
-
     std::wstring EncodePathSegment(const std::wstring& value)
     {
         std::wstring encoded;
@@ -100,7 +89,7 @@ namespace ChatBot::Core
             messages.push_back({ {"role", "system"}, {"content", "You are a helpful assistant. Reply naturally and concisely."} });
             for (const auto& message : request.history)
             {
-                messages.push_back({ {"role", RoleName(message.role)}, {"content", message.content} });
+                messages.push_back({ {"role", Model::ToString(message.role)}, {"content", message.content} });
             }
             messages.push_back({ {"role", "user"}, {"content", request.input} });
 

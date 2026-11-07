@@ -21,9 +21,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup><OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir><IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir></PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><SDLCheck>true</SDLCheck><PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions><AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories></ClCompile>
+    <ClCompile><LanguageStandard>stdcpp17</LanguageStandard><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><SDLCheck>true</SDLCheck><PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions><AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories></ClCompile>
     <Lib><TargetMachine>MachineX64</TargetMachine></Lib>
   </ItemDefinitionGroup>
+  <ItemGroup><ClCompile Include="src\ChatMessage.cpp" /></ItemGroup>
   <ItemGroup><ClInclude Include="include\ChatBot\Model\ChatMessage.h" /><ClInclude Include="include\ChatBot\Model\ChatRequest.h" /><ClInclude Include="include\ChatBot\Model\ChatResponse.h" /><ClInclude Include="include\ChatBot\Model\ChatError.h" /><ClInclude Include="include\ChatBot\Model\ChatResult.h" /></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

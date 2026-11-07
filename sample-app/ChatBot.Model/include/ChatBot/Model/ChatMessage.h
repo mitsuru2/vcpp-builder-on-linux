@@ -16,4 +16,6 @@ namespace ChatBot::Model
         ChatRole role;
         std::string content;
     };
+
+    std::string ToString(ChatRole role);
 }
