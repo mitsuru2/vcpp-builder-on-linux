@@ -26,6 +26,7 @@ jobs:
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgJsonGlob: "sample-app/vcpkg.json"
+          runVcpkgInstall: true
 
       - name: Build Visual Studio solution
         shell: pwsh

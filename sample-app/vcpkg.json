@@ -1,6 +1,7 @@
 {
   "name": "small-chat-bot",
   "version-string": "1.0.0",
+  "builtin-baseline": "65886d79ccce671dc24ffbf9a348836beacb7f6f",
   "dependencies": [
     "nlohmann-json"
   ]
