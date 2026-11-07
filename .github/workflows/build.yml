@@ -29,8 +29,9 @@ jobs:
 
       - name: Restore vcpkg dependencies
         shell: pwsh
+        working-directory: sample-app
         run: |
-          & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows --x-install-root "sample-app/vcpkg_installed" --manifest-root "sample-app"
+          & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows --x-install-root "vcpkg_installed"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
