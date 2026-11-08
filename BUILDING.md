@@ -23,6 +23,23 @@ API key is missing, the app exits with an error. The endpoint and deployment
 defaults are examples and must match an actual Azure OpenAI resource for chat
 requests to succeed.
 
+For HTTP errors, the console displays the status and any details returned by
+the service. For a 404, check that the endpoint, deployment name, and API
+version match your Azure OpenAI resource. Error details may contain information
+from the service; review them before sharing logs.
+
+To run the service tests from a Visual Studio Developer PowerShell, after
+restoring the vcpkg dependencies, run the following from the repository root:
+
+```powershell
+cl /EHsc /std:c++17 /Isample-app/ChatBot.Core/include /Isample-app/ChatBot.Model/include `
+  /Isample-app/vcpkg_installed/x64-windows/include `
+  sample-app/tests/AzureOpenAIChatServiceTests.cpp `
+  sample-app/ChatBot.Core/src/AzureOpenAIChatService.cpp `
+  sample-app/ChatBot.Model/src/ChatMessage.cpp /Fe:AzureOpenAIChatServiceTests.exe
+./AzureOpenAIChatServiceTests.exe
+```
+
 The Azure OpenAI resource and model deployment are intentionally provisioned
 manually; this repository does not contain infrastructure deployment templates
 or workflows. The GitHub Actions workflow builds the Visual Studio solution on

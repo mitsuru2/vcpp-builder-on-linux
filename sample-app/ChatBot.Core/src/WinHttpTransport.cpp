@@ -1,5 +1,8 @@
 #include "WinHttpTransport.h"
 
+#include <windows.h>
+#include <winhttp.h>
+
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -136,6 +139,6 @@ namespace ChatBot::Core::Internal
             responseBody.append(buffer.data(), read);
         }
 
-        return { statusCode, std::move(responseBody) };
+        return { static_cast<unsigned int>(statusCode), std::move(responseBody) };
     }
 }

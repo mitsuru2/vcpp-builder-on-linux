@@ -1,14 +1,12 @@
 #pragma once
 
 #include <string>
-#include <windows.h>
-#include <winhttp.h>
 
 namespace ChatBot::Core::Internal
 {
     struct HttpResponse
     {
-        DWORD statusCode = 0;
+        unsigned int statusCode = 0;
         std::string body;
     };
 

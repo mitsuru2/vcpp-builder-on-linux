@@ -62,6 +62,47 @@ namespace
         const auto parsed = iterator->get<long long>();
         return parsed < 0 ? 0 : static_cast<std::size_t>(parsed);
     }
+
+    std::string ErrorDetails(const std::string& body, const std::string& apiKey)
+    {
+        if (body.empty())
+        {
+            return {};
+        }
+
+        const Json payload = Json::parse(body, nullptr, false);
+        std::string details;
+        if (payload.is_object() && payload.contains("error") && payload["error"].is_object())
+        {
+            const auto& error = payload["error"];
+            if (error.contains("code") && error["code"].is_string())
+            {
+                details = error["code"].get<std::string>();
+            }
+            if (error.contains("message") && error["message"].is_string())
+            {
+                if (!details.empty())
+                {
+                    details += ": ";
+                }
+                details += error["message"].get<std::string>();
+            }
+        }
+        if (details.empty())
+        {
+            // Replace invalid UTF-8 so the console can display non-JSON responses too.
+            details = Json::parse(Json(body).dump(-1, ' ', false,
+                Json::error_handler_t::replace)).get<std::string>();
+        }
+
+        std::size_t position = 0;
+        while ((position = details.find(apiKey, position)) != std::string::npos)
+        {
+            details.replace(position, apiKey.size(), "[redacted]");
+            position += sizeof("[redacted]") - 1;
+        }
+        return details;
+    }
 }
 
 namespace ChatBot::Core
@@ -99,19 +140,25 @@ namespace ChatBot::Core
 
             if (response.statusCode < 200 || response.statusCode >= 300)
             {
+                Model::ChatErrorCode code = Model::ChatErrorCode::Http;
+                std::string message = "Azure OpenAI returned HTTP status " +
+                    std::to_string(response.statusCode) + ".";
                 if (response.statusCode == 401 || response.statusCode == 403)
                 {
-                    return MakeError(Model::ChatErrorCode::Authentication,
-                        "Azure OpenAI rejected the API key or access.", response.statusCode);
+                    code = Model::ChatErrorCode::Authentication;
+                    message += " Azure OpenAI rejected the API key or access.";
                 }
-                if (response.statusCode == 429)
+                else if (response.statusCode == 429)
                 {
-                    return MakeError(Model::ChatErrorCode::RateLimited,
-                        "Azure OpenAI rate limit reached. Try again shortly.", response.statusCode);
+                    code = Model::ChatErrorCode::RateLimited;
+                    message += " Azure OpenAI rate limit reached. Try again shortly.";
                 }
-                return MakeError(Model::ChatErrorCode::Http,
-                    "Azure OpenAI returned HTTP status " + std::to_string(response.statusCode) + ".",
-                    response.statusCode);
+                const std::string details = ErrorDetails(response.body, apiKey_);
+                if (!details.empty())
+                {
+                    message += "\nDetails: " + details;
+                }
+                return MakeError(code, std::move(message), response.statusCode);
             }
 
             const Json payload = Json::parse(response.body);
