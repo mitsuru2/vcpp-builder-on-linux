@@ -8,17 +8,20 @@ Install vcpkg and set `VCPKG_ROOT` to its installation directory. From
 `nlohmann-json`, then open `sample-app/SmallChatBot.sln`, select `x64` and
 `Debug` or `Release`, and build the solution in Visual Studio.
 
-Before running the console application, set these environment variables:
+The console application uses these defaults if the environment variables are
+unset. Set the variables to override them with your Azure OpenAI resource and
+deployment:
 
-- `SMALLCHATBOT_AZURE_ENDPOINT`, for example `https://your-resource.openai.azure.com`
-- `SMALLCHATBOT_AZURE_DEPLOYMENT`, the deployed chat model name
+- `SMALLCHATBOT_AZURE_ENDPOINT`, default: `https://smallchatbot.openai.azure.com`
+- `SMALLCHATBOT_AZURE_DEPLOYMENT`, default: `gpt-4o-mini`
 - `SMALLCHATBOT_AZURE_API_VERSION`, optional; defaults to `2024-10-21`
 
 Store the Azure OpenAI API key in Windows Credential Manager as a **Generic
 Credential** with target `SmallChatBot/AzureOpenAI`. The console app reads that
 credential at startup and never prints or logs the key. If the credential or
-required endpoint/deployment configuration is missing, the app exits with an
-error.
+API key is missing, the app exits with an error. The endpoint and deployment
+defaults are examples and must match an actual Azure OpenAI resource for chat
+requests to succeed.
 
 The Azure OpenAI resource and model deployment are intentionally provisioned
 manually; this repository does not contain infrastructure deployment templates

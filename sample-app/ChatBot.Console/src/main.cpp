@@ -10,10 +10,10 @@
 
 namespace
 {
-    std::wstring ReadEnvironmentVariable(const wchar_t* name)
+    std::wstring ReadEnvironmentVariable(const wchar_t* name, const wchar_t* defaultValue)
     {
         const wchar_t* value = _wgetenv(name);
-        return value == nullptr ? std::wstring{} : std::wstring(value);
+        return value == nullptr || *value == L'\0' ? std::wstring(defaultValue) : std::wstring(value);
     }
 }
 
@@ -28,18 +28,15 @@ int wmain()
     }
 
     ChatBot::Core::AzureOpenAIConfig config;
-    config.endpoint = ReadEnvironmentVariable(L"SMALLCHATBOT_AZURE_ENDPOINT");
-    config.deploymentName = ReadEnvironmentVariable(L"SMALLCHATBOT_AZURE_DEPLOYMENT");
-    const std::wstring apiVersion = ReadEnvironmentVariable(L"SMALLCHATBOT_AZURE_API_VERSION");
+    config.endpoint = ReadEnvironmentVariable(
+        L"SMALLCHATBOT_AZURE_ENDPOINT", L"https://smallchatbot.openai.azure.com");
+    config.deploymentName = ReadEnvironmentVariable(
+        L"SMALLCHATBOT_AZURE_DEPLOYMENT", L"gpt-4o-mini");
+    const std::wstring apiVersion = ReadEnvironmentVariable(
+        L"SMALLCHATBOT_AZURE_API_VERSION", config.apiVersion.c_str());
     if (!apiVersion.empty())
     {
         config.apiVersion = apiVersion;
-    }
-
-    if (config.endpoint.empty() || config.deploymentName.empty())
-    {
-        std::wcerr << L"Error: Set SMALLCHATBOT_AZURE_ENDPOINT and SMALLCHATBOT_AZURE_DEPLOYMENT before starting.\n";
-        return 1;
     }
 
     ChatBot::Core::AzureOpenAIChatService service(std::move(config), *apiKey);
