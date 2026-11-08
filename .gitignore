@@ -4,3 +4,6 @@
 **/Release/
 **/out/
 **/vcpkg_installed/
+
+# Visual Studio user settings
+**/*.vcxproj.user
