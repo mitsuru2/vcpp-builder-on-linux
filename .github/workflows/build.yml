@@ -44,7 +44,7 @@ jobs:
           $solution = "sample-app/SmallChatBot.sln"
           msbuild $solution /m /p:Configuration=Release /p:Platform=x64 /p:VcpkgRoot="${{ runner.temp }}/vcpkg"
 
-      - name: Test redirected Unicode output
+      - name: Test redirected Unicode input and output
         shell: pwsh
         run: |
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -60,7 +60,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to build chat loop tests." }
           $output = Join-Path $env:RUNNER_TEMP "chat-loop-output.txt"
           $errors = Join-Path $env:RUNNER_TEMP "chat-loop-errors.txt"
-          $process = Start-Process -FilePath "$PWD\ChatLoopTests.exe" -RedirectStandardOutput $output -RedirectStandardError $errors -Wait -PassThru
+          $inputFile = Join-Path $env:RUNNER_TEMP "chat-loop-input.txt"
+          $greeting = "$([char]0x3053)$([char]0x3093)$([char]0x306b)$([char]0x3061)$([char]0x306f) $([char]::ConvertFromUtf32(0x1f600))"
+          [IO.File]::WriteAllText($inputFile, "$greeting`nsecond`nexit`n", [Text.UTF8Encoding]::new($false))
+          $process = Start-Process -FilePath "$PWD\ChatLoopTests.exe" -RedirectStandardInput $inputFile -RedirectStandardOutput $output -RedirectStandardError $errors -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Chat loop tests failed: $([IO.File]::ReadAllText($errors))" }
           $text = [IO.File]::ReadAllText($output, [Text.Encoding]::UTF8)
           $expected = "I$([char]0x2019)m $([char]0x65e5)$([char]0x672c)$([char]::ConvertFromUtf32(0x1f600))"

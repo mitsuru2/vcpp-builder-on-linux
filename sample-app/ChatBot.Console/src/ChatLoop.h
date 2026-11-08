@@ -4,6 +4,6 @@
 
 namespace ChatBot::ConsoleApp
 {
-    void ConfigureOutputStreams();
+    void ConfigureConsoleStreams();
     int RunChatLoop(const Core::IChatService& chatService);
 }

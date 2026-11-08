@@ -22,11 +22,11 @@ int wmain()
 {
     try
     {
-        ChatBot::ConsoleApp::ConfigureOutputStreams();
+        ChatBot::ConsoleApp::ConfigureConsoleStreams();
     }
     catch (const std::exception&)
     {
-        std::wcerr << L"Error: Unable to configure Unicode console output.\n";
+        std::wcerr << L"Error: Unable to configure Unicode console streams.\n";
         return 1;
     }
 

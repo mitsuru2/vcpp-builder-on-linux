@@ -22,14 +22,14 @@ namespace
         {
             return {};
         }
-        const int length = WideCharToMultiByte(CP_UTF8, 0, value.data(),
+        const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(),
             static_cast<int>(value.size()), nullptr, 0, nullptr, nullptr);
         if (length <= 0)
         {
             throw std::runtime_error("Unable to encode console input as UTF-8.");
         }
         std::string result(static_cast<std::size_t>(length), '\0');
-        if (WideCharToMultiByte(CP_UTF8, 0, value.data(), static_cast<int>(value.size()),
+        if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(), static_cast<int>(value.size()),
             result.data(), length, nullptr, nullptr) != length)
         {
             throw std::runtime_error("Unable to encode console input as UTF-8.");
@@ -78,7 +78,7 @@ namespace
 
 namespace ChatBot::ConsoleApp
 {
-    void ConfigureOutputStreams()
+    void ConfigureConsoleStreams()
     {
         const auto configure = [](FILE* stream)
         {
@@ -89,11 +89,12 @@ namespace ChatBot::ConsoleApp
                 GetConsoleMode(reinterpret_cast<HANDLE>(handle), &mode) != FALSE;
             if (_setmode(descriptor, isConsole ? _O_U16TEXT : _O_U8TEXT) == -1)
             {
-                throw std::runtime_error("Unable to configure Unicode console output.");
+                throw std::runtime_error("Unable to configure Unicode console streams.");
             }
         };
         configure(stderr);
         configure(stdout);
+        configure(stdin);
     }
 
     int RunChatLoop(const Core::IChatService& chatService)
@@ -110,6 +111,10 @@ namespace ChatBot::ConsoleApp
             }
             if (!std::getline(std::wcin, input))
             {
+                if (std::wcin.bad() || !std::wcin.eof())
+                {
+                    throw std::runtime_error("Unable to read console input.");
+                }
                 std::wcout << L"\n";
                 return 0;
             }
