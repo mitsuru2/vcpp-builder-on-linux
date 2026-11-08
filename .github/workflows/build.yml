@@ -50,7 +50,13 @@ jobs:
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           $devcmd = Join-Path $vs "Common7\Tools\VsDevCmd.bat"
-          cmd /c "`"call `"$devcmd`" -arch=x64 && cl /nologo /EHsc /std:c++17 /W4 /WX /Isample-app\ChatBot.Core\include /Isample-app\ChatBot.Model\include sample-app\tests\ChatLoopTests.cpp sample-app\ChatBot.Console\src\ChatLoop.cpp /Fe:ChatLoopTests.exe`""
+          $batch = Join-Path $env:RUNNER_TEMP "build-chat-loop-tests.cmd"
+          @(
+            "call `"$devcmd`" -arch=x64",
+            "if errorlevel 1 exit /b 1",
+            "cl /nologo /EHsc /std:c++17 /W4 /WX /Isample-app\ChatBot.Core\include /Isample-app\ChatBot.Model\include sample-app\tests\ChatLoopTests.cpp sample-app\ChatBot.Console\src\ChatLoop.cpp /Fe:ChatLoopTests.exe"
+          ) | Set-Content -Path $batch -Encoding ascii
+          & cmd.exe /c $batch
           if ($LASTEXITCODE -ne 0) { throw "Failed to build chat loop tests." }
           $output = Join-Path $env:RUNNER_TEMP "chat-loop-output.txt"
           $errors = Join-Path $env:RUNNER_TEMP "chat-loop-errors.txt"
