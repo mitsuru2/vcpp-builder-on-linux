@@ -28,6 +28,9 @@ the service. For a 404, check that the endpoint, deployment name, and API
 version match your Azure OpenAI resource. Error details may contain information
 from the service; review them before sharing logs.
 
+Console output supports Unicode responses. When standard output or standard
+error is redirected, the application writes UTF-8.
+
 To run the service tests from a Visual Studio Developer PowerShell, after
 restoring the vcpkg dependencies, run the following from the repository root:
 

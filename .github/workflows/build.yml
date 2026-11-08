@@ -43,3 +43,22 @@ jobs:
         run: |
           $solution = "sample-app/SmallChatBot.sln"
           msbuild $solution /m /p:Configuration=Release /p:Platform=x64 /p:VcpkgRoot="${{ runner.temp }}/vcpkg"
+
+      - name: Test redirected Unicode output
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $devcmd = Join-Path $vs "Common7\Tools\VsDevCmd.bat"
+          cmd /c "`"call `"$devcmd`" -arch=x64 && cl /nologo /EHsc /std:c++17 /W4 /WX /Isample-app\ChatBot.Core\include /Isample-app\ChatBot.Model\include sample-app\tests\ChatLoopTests.cpp sample-app\ChatBot.Console\src\ChatLoop.cpp /Fe:ChatLoopTests.exe`""
+          if ($LASTEXITCODE -ne 0) { throw "Failed to build chat loop tests." }
+          $output = Join-Path $env:RUNNER_TEMP "chat-loop-output.txt"
+          $errors = Join-Path $env:RUNNER_TEMP "chat-loop-errors.txt"
+          $process = Start-Process -FilePath "$PWD\ChatLoopTests.exe" -RedirectStandardOutput $output -RedirectStandardError $errors -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Chat loop tests failed: $([IO.File]::ReadAllText($errors))" }
+          $text = [IO.File]::ReadAllText($output, [Text.Encoding]::UTF8)
+          $expected = "I$([char]0x2019)m $([char]0x65e5)$([char]0x672c)$([char]::ConvertFromUtf32(0x1f600))"
+          if (-not $text.Contains($expected) -or -not $text.Contains("Second response") -or
+              ([regex]::Matches($text, "INPUT: ").Count -ne 3)) {
+            throw "Unexpected chat loop output: $text"
+          }

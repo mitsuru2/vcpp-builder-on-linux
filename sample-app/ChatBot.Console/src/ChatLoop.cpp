@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 #include <cwctype>
+#include <cstdint>
+#include <cstdio>
+#include <fcntl.h>
+#include <io.h>
 #include <stdexcept>
 #include <windows.h>
 
@@ -74,6 +78,24 @@ namespace
 
 namespace ChatBot::ConsoleApp
 {
+    void ConfigureOutputStreams()
+    {
+        const auto configure = [](FILE* stream)
+        {
+            const int descriptor = _fileno(stream);
+            const std::intptr_t handle = _get_osfhandle(descriptor);
+            DWORD mode = 0;
+            const bool isConsole = handle != -1 &&
+                GetConsoleMode(reinterpret_cast<HANDLE>(handle), &mode) != FALSE;
+            if (_setmode(descriptor, isConsole ? _O_U16TEXT : _O_U8TEXT) == -1)
+            {
+                throw std::runtime_error("Unable to configure Unicode console output.");
+            }
+        };
+        configure(stderr);
+        configure(stdout);
+    }
+
     int RunChatLoop(const Core::IChatService& chatService)
     {
         std::vector<Model::ChatMessage> history;
@@ -82,6 +104,10 @@ namespace ChatBot::ConsoleApp
         for (;;)
         {
             std::wcout << L"INPUT: " << std::flush;
+            if (!std::wcout)
+            {
+                throw std::runtime_error("Unable to write console output.");
+            }
             if (!std::getline(std::wcin, input))
             {
                 std::wcout << L"\n";
@@ -109,6 +135,10 @@ namespace ChatBot::ConsoleApp
             {
                 const auto& error = std::get<Model::ChatError>(result);
                 std::wcerr << L"Error: " << FromUtf8(error.message) << L"\n\n";
+            }
+            if (!std::wcout || !std::wcerr)
+            {
+                throw std::runtime_error("Unable to write console output.");
             }
         }
     }

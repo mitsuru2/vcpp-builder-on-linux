@@ -4,6 +4,7 @@
 #include <ChatBot/Core/AzureOpenAIChatService.h>
 
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -19,6 +20,16 @@ namespace
 
 int wmain()
 {
+    try
+    {
+        ChatBot::ConsoleApp::ConfigureOutputStreams();
+    }
+    catch (const std::exception&)
+    {
+        std::wcerr << L"Error: Unable to configure Unicode console output.\n";
+        return 1;
+    }
+
     const auto apiKey = ChatBot::ConsoleApp::WindowsCredentialStore::ReadAzureOpenAIApiKey();
     if (!apiKey.has_value())
     {
@@ -40,5 +51,13 @@ int wmain()
     }
 
     ChatBot::Core::AzureOpenAIChatService service(std::move(config), *apiKey);
-    return ChatBot::ConsoleApp::RunChatLoop(service);
+    try
+    {
+        return ChatBot::ConsoleApp::RunChatLoop(service);
+    }
+    catch (const std::exception& error)
+    {
+        std::wcerr << L"Error: " << error.what() << L'\n';
+        return 1;
+    }
 }
