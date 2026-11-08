@@ -29,9 +29,9 @@ int wmain()
 
     ChatBot::Core::AzureOpenAIConfig config;
     config.endpoint = ReadEnvironmentVariable(
-        L"SMALLCHATBOT_AZURE_ENDPOINT", L"https://smallchatbot.openai.azure.com");
+        L"SMALLCHATBOT_AZURE_ENDPOINT", L"https://cemkl5kd55yuk-openai.openai.azure.com/");
     config.deploymentName = ReadEnvironmentVariable(
-        L"SMALLCHATBOT_AZURE_DEPLOYMENT", L"gpt-4o-mini");
+        L"SMALLCHATBOT_AZURE_DEPLOYMENT", L"gpt-5.4-nano");
     const std::wstring apiVersion = ReadEnvironmentVariable(
         L"SMALLCHATBOT_AZURE_API_VERSION", config.apiVersion.c_str());
     if (!apiVersion.empty())
