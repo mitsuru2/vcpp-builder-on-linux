@@ -1,6 +1,6 @@
 # Building SmallChatBot
 
-SmallChatBot is a Windows C++17 application and is built with Visual Studio 2022
+SmallChatBot is a Windows C++17 application and is built with Visual Studio 2026
 Community (Desktop development with C++) and the Windows 10 SDK.
 
 Install vcpkg and set `VCPKG_ROOT` to its installation directory. From
