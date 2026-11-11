@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="$(MSBuildExtensionsPath)/$(MSBuildToolsVersion)/Microsoft.Common.props" />
+</Project>

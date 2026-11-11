@@ -1,0 +1,56 @@
+<Project>
+  <Import Project="$(MSBuildToolsPath)/Microsoft.Common.CurrentVersion.targets" />
+
+  <PropertyGroup>
+    <OutDir>$(LinuxSolutionDir)bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(LinuxSolutionDir)obj/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <OutputPath>$(OutDir)</OutputPath>
+    <BaseOutputPath>$(LinuxSolutionDir)bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(LinuxSolutionDir)obj/</BaseIntermediateOutputPath>
+    <TargetName Condition="'$(TargetName)' == ''">$(ProjectName)</TargetName>
+    <TargetExt Condition="'$(ConfigurationType)' == 'StaticLibrary'">.lib</TargetExt>
+    <TargetExt Condition="'$(ConfigurationType)' == 'Application'">.exe</TargetExt>
+    <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
+    <RuntimeLibraryOption Condition="'$(UseDebugLibraries)' == 'true'">/MDd</RuntimeLibraryOption>
+    <RuntimeLibraryOption Condition="'$(UseDebugLibraries)' != 'true'">/MD</RuntimeLibraryOption>
+    <XwinCrtLibDir>$(XwinRoot)/crt/lib/x86_64</XwinCrtLibDir>
+    <XwinUcrtLibDir>$(XwinRoot)/sdk/lib/ucrt/x86_64</XwinUcrtLibDir>
+    <XwinUmLibDir>$(XwinRoot)/sdk/lib/um/x86_64</XwinUmLibDir>
+    <XwinIncludeDirs>/I&quot;$(XwinRoot)/crt/include&quot; /I&quot;$(XwinRoot)/sdk/include/ucrt&quot; /I&quot;$(XwinRoot)/sdk/include/shared&quot; /I&quot;$(XwinRoot)/sdk/include/um&quot; /I&quot;$(XwinRoot)/sdk/include/winrt&quot;</XwinIncludeDirs>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(ConfigurationType)' == 'Application'">
+    <Link Include="LinuxLinkSettings" />
+  </ItemGroup>
+
+  <Target Name="GetTargetPath">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(TargetPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="Compile">
+    <MakeDir Directories="$(IntDir)" />
+    <Exec
+      WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="$(ClangCl) --target=x86_64-pc-windows-msvc -fuse-ld=lld /nologo /c /std:c++17 /EHsc /permissive- /W4 /WX $(RuntimeLibraryOption) $(XwinIncludeDirs) /I&quot;$([System.String]::Copy('%(ClCompile.AdditionalIncludeDirectories)').Replace('\', '/').Trim(';').Replace(';', '&quot; /I&quot;'))&quot; /D &quot;$([System.String]::Copy('%(ClCompile.PreprocessorDefinitions)').Trim(';').Replace(';', '&quot; /D &quot;'))&quot; %(ClCompile.AdditionalOptions) /Fo&quot;$(IntDir)%(ClCompile.Filename).obj&quot; &quot;%(ClCompile.FullPath)&quot;" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="ResolveProjectReferences;CreateOutputDirectory;Compile;CreateStaticLibrary;LinkApplication" />
+
+  <Target Name="CreateOutputDirectory">
+    <MakeDir Directories="$(OutDir)" />
+  </Target>
+
+  <Target Name="CreateStaticLibrary" Condition="'$(ConfigurationType)' == 'StaticLibrary'">
+    <Exec
+      WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="$(LlvmLib) /NOLOGO /MACHINE:X64 /OUT:&quot;$(TargetPath)&quot; @(ClCompile-&gt;'&quot;$(IntDir)%(Filename).obj&quot;', ' ')" />
+  </Target>
+
+  <Target Name="LinkApplication" Condition="'$(ConfigurationType)' == 'Application'">
+    <Exec
+      WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="$(LldLink) /MACHINE:X64 /SUBSYSTEM:CONSOLE /OUT:&quot;$(TargetPath)&quot; /LIBPATH:&quot;$(XwinCrtLibDir)&quot; /LIBPATH:&quot;$(XwinUcrtLibDir)&quot; /LIBPATH:&quot;$(XwinUmLibDir)&quot; @(ClCompile-&gt;'&quot;$(IntDir)%(Filename).obj&quot;', ' ') @(ProjectReference-&gt;'&quot;$(OutDir)%(Filename).lib&quot;', ' ') $([System.String]::Copy('%(Link.AdditionalDependencies)').Replace(';', ' '))" />
+  </Target>
+</Project>

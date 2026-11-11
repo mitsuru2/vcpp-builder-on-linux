@@ -4,10 +4,18 @@ on:
   push:
     paths:
       - "sample-app/**"
+      - "scripts/**"
+      - ".editorconfig"
+      - ".gitattributes"
+      - "BUILDING.md"
       - ".github/workflows/build.yml"
   pull_request:
     paths:
       - "sample-app/**"
+      - "scripts/**"
+      - ".editorconfig"
+      - ".gitattributes"
+      - "BUILDING.md"
       - ".github/workflows/build.yml"
   workflow_dispatch:
 
@@ -20,6 +28,18 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+
+      - name: Check encoding with Windows PowerShell
+        shell: powershell
+        run: ./scripts/Find-NonUtf8Files.ps1
+
+      - name: Test encoding checker with Windows PowerShell
+        shell: powershell
+        run: ./scripts/Test-FindNonUtf8Files.ps1
+
+      - name: Test encoding checker with PowerShell 7
+        shell: pwsh
+        run: ./scripts/Test-FindNonUtf8Files.ps1
 
       - name: Install vcpkg dependencies
         uses: lukka/run-vcpkg@v11
@@ -54,7 +74,7 @@ jobs:
           @(
             "call `"$devcmd`" -arch=x64",
             "if errorlevel 1 exit /b 1",
-            "cl /nologo /EHsc /std:c++17 /W4 /WX /Isample-app\ChatBot.Core\include /Isample-app\ChatBot.Model\include sample-app\tests\ChatLoopTests.cpp sample-app\ChatBot.Console\src\ChatLoop.cpp /Fe:ChatLoopTests.exe"
+            "cl /nologo /utf-8 /EHsc /std:c++17 /W4 /WX /Isample-app\ChatBot.Core\include /Isample-app\ChatBot.Model\include sample-app\tests\ChatLoopTests.cpp sample-app\ChatBot.Console\src\ChatLoop.cpp /Fe:ChatLoopTests.exe"
           ) | Set-Content -Path $batch -Encoding ascii
           & cmd.exe /c $batch
           if ($LASTEXITCODE -ne 0) { throw "Failed to build chat loop tests." }

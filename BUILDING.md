@@ -8,6 +8,31 @@ Install vcpkg and set `VCPKG_ROOT` to its installation directory. From
 `nlohmann-json`, then open `sample-app/SmallChatBot.sln`, select `x64` and
 `Debug` or `Release`, and build the solution in Visual Studio.
 
+## Text encoding
+
+Text files use UTF-8 without a BOM; ASCII-only files are also valid. The
+solution passes `/utf-8` to the C++ compiler, setting both the source and
+execution character sets to UTF-8. `.editorconfig` configures UTF-8 for editors,
+and `.gitattributes` uses LF line endings for text files.
+
+From the repository root, run the checker with Windows PowerShell 5.1 or
+PowerShell 7:
+
+```powershell
+./scripts/Find-NonUtf8Files.ps1
+```
+
+The checker examines the text file types listed in the script and skips
+generated directories (`bin`, `obj`, `out`, and `vcpkg_installed`), Visual
+Studio and Git metadata, and symbolic links. It reports BOMs, invalid UTF-8,
+and NUL bytes, and exits with a nonzero status on violations or read errors.
+It cannot identify the original encoding or detect text that is valid UTF-8
+but already corrupted. Review and convert such files manually.
+
+Run `./scripts/Test-FindNonUtf8Files.ps1` to exercise the checker.
+
+## Running SmallChatBot
+
 The console application uses these defaults if the environment variables are
 unset. Set the variables to override them with your Azure OpenAI resource and
 deployment:
@@ -35,7 +60,7 @@ To run the service tests from a Visual Studio Developer PowerShell, after
 restoring the vcpkg dependencies, run the following from the repository root:
 
 ```powershell
-cl /EHsc /std:c++17 /Isample-app/ChatBot.Core/include /Isample-app/ChatBot.Model/include `
+cl /utf-8 /EHsc /std:c++17 /Isample-app/ChatBot.Core/include /Isample-app/ChatBot.Model/include `
   /Isample-app/vcpkg_installed/x64-windows/include `
   sample-app/tests/AzureOpenAIChatServiceTests.cpp `
   sample-app/ChatBot.Core/src/AzureOpenAIChatService.cpp `
