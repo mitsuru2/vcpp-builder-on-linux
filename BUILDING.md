@@ -72,3 +72,39 @@ The Azure OpenAI resource and model deployment are intentionally provisioned
 manually; this repository does not contain infrastructure deployment templates
 or workflows. The GitHub Actions workflow builds the Visual Studio solution on
 Windows.
+
+## Linux container cross-compilation
+
+The Linux container builds the existing MSBuild solution for Windows x64; it
+does not introduce a separate CMake build. Docker and the Windows/MSVC license
+terms are required. The image contains Windows SDK and CRT files, including
+non-redistributable Debug runtime files. Review and accept Microsoft's terms
+before building or sharing the image.
+
+From the repository root, build and run the Release configuration:
+
+```sh
+docker build --build-arg ACCEPT_MSVC_LICENSE=Y -t smallchatbot-linux .
+docker run --rm -v "$PWD/artifacts:/workspace/sample-app/bin" smallchatbot-linux
+```
+
+The build pins the .NET SDK base image to 10.0.403 on Ubuntu 24.04, LLVM to
+19.1.1, xwin to 0.10.0, Windows SDK to 10.0.26100, and the vcpkg baseline to
+the commit recorded in `sample-app/vcpkg.json`. xwin installs only the x64
+desktop SDK/CRT variant and includes Debug runtime libraries for Debug builds.
+The image restores the manifest dependency using the pinned vcpkg baseline.
+
+To build Debug instead, override the image command:
+
+```sh
+docker run --rm -v "$PWD/artifacts:/workspace/sample-app/bin" \
+  smallchatbot-linux dotnet msbuild sample-app/SmallChatBot.sln -m:1 \
+  -p:Configuration=Debug -p:Platform=x64 \
+  -p:VCTargetsPath=/workspace/sample-app/msbuild/linux/
+```
+
+The resulting `.exe` files are Windows x64 binaries and cannot be run directly
+in the Linux container. Run application tests on Windows. The x64 desktop
+variant and the sample's current project settings are supported; other SDK
+variants, architectures, and MSBuild properties are not validated by this
+cross-build.
