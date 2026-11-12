@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <SolutionDir Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*Undefined*'">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../'))/</SolutionDir>
+    <LinuxSolutionDir>$([System.String]::Copy('$(SolutionDir)').Replace('\', '/'))</LinuxSolutionDir>
+    <OutDir>$(LinuxSolutionDir)bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(LinuxSolutionDir)obj/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <OutputPath>$(OutDir)</OutputPath>
+    <BaseOutputPath>$(LinuxSolutionDir)bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(LinuxSolutionDir)obj/</BaseIntermediateOutputPath>
+    <XwinRoot Condition="'$(XwinRoot)' == ''">/opt/xwin</XwinRoot>
+    <ClangCl Condition="'$(ClangCl)' == ''">clang-cl</ClangCl>
+    <LldLink Condition="'$(LldLink)' == ''">lld-link</LldLink>
+    <LlvmLib Condition="'$(LlvmLib)' == ''">llvm-lib</LlvmLib>
+    <LlvmRc Condition="'$(LlvmRc)' == ''">llvm-rc</LlvmRc>
+  </PropertyGroup>
+</Project>
