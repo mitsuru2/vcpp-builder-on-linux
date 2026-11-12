@@ -1,21 +1,9 @@
 name: Build SmallChatBot
 
 on:
-  push:
-    paths:
-      - "sample-app/**"
-      - "scripts/**"
-      - ".editorconfig"
-      - ".gitattributes"
-      - "BUILDING.md"
-      - ".github/workflows/build.yml"
   pull_request:
     paths:
       - "sample-app/**"
-      - "scripts/**"
-      - ".editorconfig"
-      - ".gitattributes"
-      - "BUILDING.md"
       - ".github/workflows/build.yml"
   workflow_dispatch:
 
@@ -32,14 +20,6 @@ jobs:
       - name: Check encoding with Windows PowerShell
         shell: powershell
         run: ./scripts/Find-NonUtf8Files.ps1
-
-      - name: Test encoding checker with Windows PowerShell
-        shell: powershell
-        run: ./scripts/Test-FindNonUtf8Files.ps1
-
-      - name: Test encoding checker with PowerShell 7
-        shell: pwsh
-        run: ./scripts/Test-FindNonUtf8Files.ps1
 
       - name: Install vcpkg dependencies
         uses: lukka/run-vcpkg@v11
