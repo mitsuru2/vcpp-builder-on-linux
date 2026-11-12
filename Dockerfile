@@ -4,9 +4,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0.403-noble@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e
 
 # Pin the toolchain and vcpkg source used to build the Linux cross-compilation image.
-ARG ACCEPT_MSVC_LICENSE
+ARG ACCEPT_MSVC_LICENSE=Y
 ARG LLVM_VERSION=1:19.1.1-1ubuntu1~24.04.2
 ARG VCPKG_COMMIT=65886d79ccce671dc24ffbf9a348836beacb7f6f
+ARG XWIN_URL=https://github.com/Jake-Shadle/xwin/releases/download/0.10.0/xwin-0.10.0-x86_64-unknown-linux-musl.tar.gz
+ARG XWIN_SHA256=d870eb4b2f390878af6da1ccd3cf321d22fcb72720984853b4be732ae597fc88
+ARG VS_CHANNEL_URL=https://download.visualstudio.microsoft.com/download/pr/95995f57-8355-4ff5-8d90-a7e1669fb3b3/a788dfa3e6f50a33f7dee8396fd40d2946c69a776c0cfa5208f56d461fd1a825/VisualStudio.17.Release.chman
+ARG VS_CHANNEL_SHA256=44a3e7dc44486c945abdc1fae97e7e22de4d05e80f03b00e9302ba4b72c3e0e3
 
 # Require explicit acceptance of Microsoft's license before installing its SDK.
 RUN test "$ACCEPT_MSVC_LICENSE" = Y || \
@@ -25,15 +29,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 # Fetch and verify xwin, then install the Windows SDK and CRT needed for cross-compilation.
 RUN set -eux; \
     curl --http1.1 -fsSL --retry 3 \
-      https://github.com/Jake-Shadle/xwin/releases/download/0.10.0/xwin-0.10.0-x86_64-unknown-linux-musl.tar.gz \
+      "$XWIN_URL" \
       -o /tmp/xwin.tar.gz; \
-    echo 'd870eb4b2f390878af6da1ccd3cf321d22fcb72720984853b4be732ae597fc88  /tmp/xwin.tar.gz' | sha256sum -c -; \
+    echo "$XWIN_SHA256  /tmp/xwin.tar.gz" | sha256sum -c -; \
     mkdir /tmp/xwin; \
     tar -xzf /tmp/xwin.tar.gz -C /tmp/xwin --strip-components=1; \
     curl --http1.1 -fsSL --retry 3 \
-      https://download.visualstudio.microsoft.com/download/pr/95995f57-8355-4ff5-8d90-a7e1669fb3b3/a788dfa3e6f50a33f7dee8396fd40d2946c69a776c0cfa5208f56d461fd1a825/VisualStudio.17.Release.chman \
+      "$VS_CHANNEL_URL" \
       -o /tmp/channel.json; \
-    echo '44a3e7dc44486c945abdc1fae97e7e22de4d05e80f03b00e9302ba4b72c3e0e3  /tmp/channel.json' | sha256sum -c -; \
+    echo "$VS_CHANNEL_SHA256  /tmp/channel.json" | sha256sum -c -; \
     /tmp/xwin/xwin --accept-license --manifest /tmp/channel.json --arch x86_64 \
       --variant desktop --sdk-version 10.0.26100 --include-debug-runtime --temp \
       --timeout 120 splat --include-debug-libs --output /opt/xwin; \
