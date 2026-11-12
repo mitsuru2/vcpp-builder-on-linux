@@ -93,6 +93,8 @@ The build pins the .NET SDK base image to 10.0.403 on Ubuntu 24.04, LLVM to
 the commit recorded in `sample-app/vcpkg.json`. xwin installs only the x64
 desktop SDK/CRT variant and includes Debug runtime libraries for Debug builds.
 The image restores the manifest dependency using the pinned vcpkg baseline.
+See [BUILD.md](BUILD.md) for the selection rationale and update procedure
+when Visual Studio or the toolchain changes.
 
 To build Debug instead, override the image command:
 
