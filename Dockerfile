@@ -4,7 +4,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0.403-noble@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e
 
 # Pin the toolchain and vcpkg source used to build the Linux cross-compilation image.
-ARG ACCEPT_MSVC_LICENSE=Y
+ARG ACCEPT_MSVC_LICENSE
 ARG LLVM_VERSION=1:19.1.1-1ubuntu1~24.04.2
 ARG VCPKG_COMMIT=65886d79ccce671dc24ffbf9a348836beacb7f6f
 ARG XWIN_URL=https://github.com/Jake-Shadle/xwin/releases/download/0.10.0/xwin-0.10.0-x86_64-unknown-linux-musl.tar.gz
