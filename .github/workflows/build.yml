@@ -72,6 +72,32 @@ jobs:
             throw "Unexpected chat loop output: $text"
           }
 
+      - name: Upload Windows build artifact
+        id: upload-windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: sample-app/bin/x64/Release/
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Summarize Windows build
+        if: always()
+        shell: bash
+        env:
+          BUILD_STATUS: ${{ job.status }}
+          ARTIFACT_URL: ${{ steps.upload-windows.outputs.artifact-url }}
+        run: |
+          {
+            echo "## Windows build"
+            echo "Result: $BUILD_STATUS"
+            if [ -n "$ARTIFACT_URL" ]; then
+              echo "[Download windows-build]($ARTIFACT_URL)"
+            else
+              echo "Artifact unavailable."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build-linux:
     runs-on: ubuntu-latest
     permissions:
@@ -101,3 +127,29 @@ jobs:
           docker cp "$container_id:/workspace/sample-app/bin/x64/Release/ChatBot.Console.exe" \
             "$RUNNER_TEMP/linux-build/ChatBot.Console.exe"
           test -s "$RUNNER_TEMP/linux-build/ChatBot.Console.exe"
+
+      - name: Upload Linux build artifact
+        id: upload-linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: ${{ runner.temp }}/linux-build/ChatBot.Console.exe
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Summarize Linux build
+        if: always()
+        shell: bash
+        env:
+          BUILD_STATUS: ${{ job.status }}
+          ARTIFACT_URL: ${{ steps.upload-linux.outputs.artifact-url }}
+        run: |
+          {
+            echo "## Linux build"
+            echo "Result: $BUILD_STATUS"
+            if [ -n "$ARTIFACT_URL" ]; then
+              echo "[Download linux-build]($ARTIFACT_URL)"
+            else
+              echo "Artifact unavailable."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
