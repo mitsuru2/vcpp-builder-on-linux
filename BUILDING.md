@@ -88,6 +88,15 @@ docker build --build-arg ACCEPT_MSVC_LICENSE=Y -t smallchatbot-linux .
 docker run --rm -v "$PWD/artifacts:/workspace/sample-app/bin" smallchatbot-linux
 ```
 
+The GitHub Actions workflow `.github/workflows/publish-docker.yml` publishes
+the image to `ghcr.io/mitsuru2/vcpp-builder-on-linux` when the root
+`Dockerfile` changes on `main`, or when started manually from the Actions tab.
+It publishes `main` and `latest` tags for the default branch and uses
+`GITHUB_TOKEN`, so no registry secret is required. Set the repository Actions
+variable `ACCEPT_MSVC_LICENSE` to `Y` after reviewing and accepting Microsoft's
+license terms; without it, the Docker build fails. The image includes Microsoft
+SDK/CRT files, including non-redistributable Debug files.
+
 The build pins the .NET SDK base image to 10.0.403 on Ubuntu 24.04, LLVM to
 19.1.1, xwin to 0.10.0, Windows SDK to 10.0.26100, and the vcpkg baseline to
 the commit recorded in `sample-app/vcpkg.json`. xwin installs only the x64
