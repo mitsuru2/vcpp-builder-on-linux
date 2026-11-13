@@ -1,63 +1,61 @@
-# Building SmallChatBot
+# SmallChatBot のビルド
 
-SmallChatBot is a Windows C++17 application and is built with Visual Studio 2026
-Community (Desktop development with C++) and the Windows 10 SDK.
+SmallChatBot は Windows 向けの C++17 アプリケーションで、Visual Studio 2026
+Community（C++ によるデスクトップ開発）と Windows 10 SDK でビルドします。
 
-Install vcpkg and set `VCPKG_ROOT` to its installation directory. From
-`sample-app`, run `vcpkg install --triplet x64-windows` to restore
-`nlohmann-json`, then open `sample-app/SmallChatBot.sln`, select `x64` and
-`Debug` or `Release`, and build the solution in Visual Studio.
+vcpkg をインストールし、`VCPKG_ROOT` にそのインストールディレクトリを設定します。
+`sample-app` から `vcpkg install --triplet x64-windows` を実行して
+`nlohmann-json` を復元し、`sample-app/SmallChatBot.sln` を開いて `x64` と
+`Debug` または `Release` を選択し、Visual Studio でソリューションをビルドします。
 
-## Text encoding
+## テキストエンコーディング
 
-Text files use UTF-8 without a BOM; ASCII-only files are also valid. The
-solution passes `/utf-8` to the C++ compiler, setting both the source and
-execution character sets to UTF-8. `.editorconfig` configures UTF-8 for editors,
-and `.gitattributes` uses LF line endings for text files.
+テキストファイルは BOM なしの UTF-8 を使用します。ASCII のみのファイルも有効です。
+ソリューションは C++ コンパイラに `/utf-8` を渡し、ソース文字セットと実行文字セットの
+両方を UTF-8 に設定します。`.editorconfig` はエディターの UTF-8 を設定し、
+`.gitattributes` はテキストファイルの改行を LF にします。
 
-From the repository root, run the checker with Windows PowerShell 5.1 or
-PowerShell 7:
+リポジトリのルートから、Windows PowerShell 5.1 または PowerShell 7 でチェッカーを
+実行します。
 
 ```powershell
 ./scripts/Find-NonUtf8Files.ps1
 ```
 
-The checker examines the text file types listed in the script and skips
-generated directories (`bin`, `obj`, `out`, and `vcpkg_installed`), Visual
-Studio and Git metadata, and symbolic links. It reports BOMs, invalid UTF-8,
-and NUL bytes, and exits with a nonzero status on violations or read errors.
-It cannot identify the original encoding or detect text that is valid UTF-8
-but already corrupted. Review and convert such files manually.
+チェッカーはスクリプトに記載されたテキストファイルの種類を検査し、生成ディレクトリ
+（`bin`、`obj`、`out`、`vcpkg_installed`）、Visual Studio と Git のメタデータ、
+シンボリックリンクをスキップします。BOM、不正な UTF-8、NUL バイトを報告し、違反または
+読み取りエラーがある場合は 0 以外の終了コードで終了します。元のエンコーディングの特定や、
+有効な UTF-8 だが既に文字化けしているテキストの検出はできません。そのようなファイルは
+手動で確認して変換してください。
 
-Run `./scripts/Test-FindNonUtf8Files.ps1` to exercise the checker.
+チェッカー自体のテストは `./scripts/Test-FindNonUtf8Files.ps1` で実行します。
 
-## Running SmallChatBot
+## SmallChatBot の実行
 
-The console application uses these defaults if the environment variables are
-unset. Set the variables to override them with your Azure OpenAI resource and
-deployment:
+コンソールアプリケーションは、環境変数が未設定の場合に次の既定値を使用します。
+Azure OpenAI のリソースとデプロイメントに合わせて上書きするには、変数を設定します。
 
-- `SMALLCHATBOT_AZURE_ENDPOINT`, default: `https://smallchatbot.openai.azure.com`
-- `SMALLCHATBOT_AZURE_DEPLOYMENT`, default: `gpt-4o-mini`
-- `SMALLCHATBOT_AZURE_API_VERSION`, optional; defaults to `2024-10-21`
+- `SMALLCHATBOT_AZURE_ENDPOINT`、既定値: `https://smallchatbot.openai.azure.com`
+- `SMALLCHATBOT_AZURE_DEPLOYMENT`、既定値: `gpt-4o-mini`
+- `SMALLCHATBOT_AZURE_API_VERSION`、省略可。既定値は `2024-10-21`
 
-Store the Azure OpenAI API key in Windows Credential Manager as a **Generic
-Credential** with target `SmallChatBot/AzureOpenAI`. The console app reads that
-credential at startup and never prints or logs the key. If the credential or
-API key is missing, the app exits with an error. The endpoint and deployment
-defaults are examples and must match an actual Azure OpenAI resource for chat
-requests to succeed.
+Azure OpenAI の API キーは、Windows 資格情報マネージャーに、ターゲット
+`SmallChatBot/AzureOpenAI` の **汎用資格情報** として保存します。コンソールアプリは
+起動時にその資格情報を読み取り、キーを出力やログに記録しません。資格情報または API キーが
+ない場合、アプリはエラーで終了します。エンドポイントとデプロイメントの既定値は例であり、
+チャットリクエストを成功させるには実際の Azure OpenAI リソースと一致させる必要があります。
 
-For HTTP errors, the console displays the status and any details returned by
-the service. For a 404, check that the endpoint, deployment name, and API
-version match your Azure OpenAI resource. Error details may contain information
-from the service; review them before sharing logs.
+HTTP エラーの場合、コンソールはステータスと、サービスが返した詳細を表示します。
+404 の場合は、エンドポイント、デプロイメント名、API バージョンが Azure OpenAI
+リソースと一致しているか確認してください。エラー詳細にはサービスからの情報が含まれる
+場合があるため、ログを共有する前に内容を確認してください。
 
-Console input and output support Unicode. Redirected standard input must be
-UTF-8; redirected standard output and standard error are written as UTF-8.
+コンソールの入出力は Unicode に対応しています。リダイレクトされた標準入力は UTF-8
+である必要があり、リダイレクトされた標準出力と標準エラーは UTF-8 で書き込まれます。
 
-To run the service tests from a Visual Studio Developer PowerShell, after
-restoring the vcpkg dependencies, run the following from the repository root:
+Visual Studio Developer PowerShell からサービスのテストを実行するには、vcpkg の
+依存関係を復元した後、リポジトリのルートから次を実行します。
 
 ```powershell
 cl /utf-8 /EHsc /std:c++17 /Isample-app/ChatBot.Core/include /Isample-app/ChatBot.Model/include `
@@ -68,42 +66,43 @@ cl /utf-8 /EHsc /std:c++17 /Isample-app/ChatBot.Core/include /Isample-app/ChatBo
 ./AzureOpenAIChatServiceTests.exe
 ```
 
-The Azure OpenAI resource and model deployment are intentionally provisioned
-manually; this repository does not contain infrastructure deployment templates
-or workflows. The GitHub Actions workflow builds the Visual Studio solution on
-Windows.
+Azure OpenAI のリソースとモデルのデプロイメントは意図的に手動でプロビジョニングします。
+このリポジトリにはインフラストラクチャのデプロイ用テンプレートやワークフローは
+含まれません。GitHub Actions のワークフローは Windows 上で Visual Studio
+ソリューションをビルドします。
 
-## Linux container cross-compilation
+## Linux コンテナでのクロスコンパイル
 
-The Linux container builds the existing MSBuild solution for Windows x64; it
-does not introduce a separate CMake build. Docker and the Windows/MSVC license
-terms are required. The image contains Windows SDK and CRT files, including
-non-redistributable Debug runtime files. Review and accept Microsoft's terms
-before building or sharing the image.
+Linux コンテナは、既存の MSBuild ソリューションを Windows x64 向けにビルドします。
+別の CMake ビルドは導入しません。Docker と、Windows/MSVC のライセンス条件が必要です。
+イメージには、再配布不可の Debug ランタイムファイルを含む Windows SDK と CRT の
+ファイルが含まれます。ビルドまたはイメージの共有の前に、Microsoft の条件を確認して
+受諾してください。
 
-From the repository root, build and run the Release configuration:
+リポジトリのルートから、Release 構成をビルドして実行します。
 
 ```sh
 docker build --build-arg ACCEPT_MSVC_LICENSE=Y -t smallchatbot-linux .
 docker run --rm -v "$PWD/artifacts:/workspace/sample-app/bin" smallchatbot-linux
 ```
 
-The GitHub Actions workflow `.github/workflows/publish-docker.yml` publishes
-the image to `ghcr.io/mitsuru2/vcpp-builder-on-linux` when the root
-`Dockerfile` changes on `main`, or when started manually from the Actions tab.
-It publishes `main` and `latest` tags for the default branch and uses
-`GITHUB_TOKEN`, so no registry secret is required. Set the repository Actions
-variable `ACCEPT_MSVC_LICENSE` to `Y` after reviewing and accepting Microsoft's
-license terms; without it, the Docker build fails. The image includes Microsoft
-SDK/CRT files, including non-redistributable Debug files.
+GitHub Actions のワークフロー `.github/workflows/publish-docker.yml` は、ルートの
+`Dockerfile` が `main` で変更された場合、または Actions タブから手動で開始された場合に、
+イメージを `ghcr.io/mitsuru2/vcpp-builder-on-linux` に公開します。既定ブランチに対して
+`main` と `latest` のタグを公開し、`GITHUB_TOKEN` を使用するため、レジストリ用の
+シークレットは不要です。Microsoft のライセンス条件を確認して受諾した後、リポジトリの
+Actions 変数 `ACCEPT_MSVC_LICENSE` を `Y` に設定してください。設定がない場合、Docker
+ビルドは失敗します。イメージには、再配布不可の Debug ファイルを含む Microsoft の
+SDK/CRT ファイルが含まれます。
 
-The build pins the .NET SDK base image to 10.0.403 on Ubuntu 24.04, LLVM to
-19.1.1, xwin to 0.10.0, Windows SDK to 10.0.26100, and the vcpkg baseline to
-the commit recorded in `sample-app/vcpkg.json`. xwin installs only the x64
-desktop SDK/CRT variant and includes Debug runtime libraries for Debug builds.
-The image restores the manifest dependency using the pinned vcpkg baseline.
+ビルドでは、.NET SDK のベースイメージを Ubuntu 24.04 上の 10.0.403、LLVM を 19.1.1、
+xwin を 0.10.0、Windows SDK を 10.0.26100 に固定し、vcpkg のベースラインを
+`sample-app/vcpkg.json` に記録されたコミットに固定します。xwin は x64 の
+デスクトップ向け SDK/CRT バリアントのみをインストールし、Debug ビルド用に Debug
+ランタイムライブラリを含めます。イメージは、固定した vcpkg ベースラインを使って
+マニフェストの依存関係を復元します。
 
-To build Debug instead, override the image command:
+代わりに Debug をビルドするには、イメージのコマンドを上書きします。
 
 ```sh
 docker run --rm -v "$PWD/artifacts:/workspace/sample-app/bin" \
@@ -112,58 +111,57 @@ docker run --rm -v "$PWD/artifacts:/workspace/sample-app/bin" \
   -p:VCTargetsPath=/workspace/sample-app/msbuild/linux/
 ```
 
-The resulting `.exe` files are Windows x64 binaries and cannot be run directly
-in the Linux container. Run application tests on Windows. The x64 desktop
-variant and the sample's current project settings are supported; other SDK
-variants, architectures, and MSBuild properties are not validated by this
-cross-build.
+生成される `.exe` ファイルは Windows x64 バイナリであり、Linux コンテナ内で直接実行
+することはできません。アプリケーションのテストは Windows で実行してください。
+x64 デスクトップバリアントとサンプルの現在のプロジェクト設定のみがサポート対象です。
+それ以外の SDK バリアント、アーキテクチャ、MSBuild プロパティは、このクロスビルドでは
+検証されていません。
 
-## Selecting and updating the cross-compilation toolchain
+## クロスコンパイル用ツールチェーンの選定と更新
 
-The Visual Studio solution remains the build definition on both platforms.
-Changing Visual Studio does not automatically update the Linux toolchain:
-review the selections below and validate them together.
+Visual Studio ソリューションは、両プラットフォームでビルド定義であり続けます。
+Visual Studio を変更しても Linux のツールチェーンは自動では更新されません。以下の
+選択内容を確認し、まとめて検証してください。
 
-### Current selections
+### 現在の選択
 
-| Component | Current selection and reason | Where to update |
+| コンポーネント | 現在の選択と理由 | 更新箇所 |
 | --- | --- | --- |
-| Visual Studio and MSBuild on Windows | Windows CI uses Visual Studio 2026 (`[18.0,19.0)`). The three `.vcxproj` files select `v145` for `Debug|x64` and `Release|x64`; `Directory.Build.props` contains a `v143` default. Check the **evaluated** property for each configuration, not just the default. | `.github/workflows/build.yml`, `sample-app/Directory.Build.props`, and the `.vcxproj` files |
-| Windows SDK | Projects specify `10.0`, not a particular SDK build. For the Linux trial we chose Windows 11 SDK `10.0.26100` from the VS 17 channel; it provided the headers and x64 libraries needed by the sample. This does not pin the SDK used by Visual Studio on Windows. | `Dockerfile` (`--sdk-version`); project `WindowsTargetPlatformVersion` if the Windows build must also be pinned |
-| CRT and STL | The fixed VS 17.14.45 channel selected the 14.44.17.14 CRT packages, including the 14.44.35211 Debug runtime. These are VS 2022 components, not the Windows CI's v145 toolset. They were tested for this sample, not established as identical to v145. xwin defaults to the latest CRT **in the supplied manifest**; the Dockerfile does not pass `--crt-version`. | `Dockerfile` (channel URL and SHA-256, optionally `--crt-version`) |
-| LLVM | Ubuntu LLVM 18 failed because the selected MSVC STL required Clang 19 or newer. LLVM 19.1.1 compiled and linked the sample; use matching clang, lld and llvm package versions. | `Dockerfile` (`LLVM_VERSION`, package names and tool symlinks) |
-| xwin | Version 0.10.0 was used to obtain x64 desktop SDK and CRT files, with Debug libraries and runtime DLLs. The release archive and the channel manifest have separate SHA-256 checks in the Dockerfile. | `Dockerfile` (xwin URL, archive hash and flags) |
-| .NET SDK | 10.0.403 on Ubuntu 24.04 was used for `dotnet msbuild` and the Linux C++ targets; the base image is pinned by digest. It is not the Windows Visual Studio MSBuild version. | `Dockerfile` (`FROM` tag and digest) |
-| vcpkg | `sample-app/vcpkg.json` pins baseline `65886d79ccce671dc24ffbf9a348836beacb7f6f`, selecting `nlohmann-json` 3.12.0#2. Docker restores the header-only dependency for `x64-linux` and copies its headers into the path expected for `x64-windows`. This is not a general method for Windows binary dependencies. | `sample-app/vcpkg.json` and `Dockerfile` (`VCPKG_COMMIT`) together |
+| Windows 上の Visual Studio と MSBuild | Windows CI は Visual Studio 2026（`[18.0,19.0)`）を使用します。3 つの `.vcxproj` は `Debug|x64` と `Release|x64` に `v145` を選択し、`Directory.Build.props` には既定値として `v143` があります。既定値だけでなく、各構成で **評価された** プロパティを確認してください。 | `.github/workflows/build.yml`、`sample-app/Directory.Build.props`、各 `.vcxproj` |
+| Windows SDK | プロジェクトは特定の SDK ビルドではなく `10.0` を指定します。Linux での試行では、VS 17 チャネルの Windows 11 SDK `10.0.26100` を選択しました。サンプルに必要なヘッダーと x64 ライブラリが含まれていました。Windows 上の Visual Studio が使用する SDK を固定するものではありません。 | `Dockerfile`（`--sdk-version`）。Windows ビルドも固定する場合はプロジェクトの `WindowsTargetPlatformVersion` |
+| CRT と STL | 固定した VS 17.14.45 チャネルでは、14.44.35211 の Debug ランタイムを含む 14.44.17.14 の CRT パッケージが選択されました。これらは VS 2022 のコンポーネントであり、Windows CI の v145 ツールセットではありません。このサンプルでテストしたものであり、v145 と同一であることは確認されていません。xwin は、与えられたマニフェスト内の最新の CRT を既定で選択します。Dockerfile は `--crt-version` を渡しません。 | `Dockerfile`（チャネル URL と SHA-256、必要に応じて `--crt-version`） |
+| LLVM | Ubuntu の LLVM 18 は、選択した MSVC STL が Clang 19 以降を要求したため失敗しました。LLVM 19.1.1 ではサンプルのコンパイルとリンクに成功しました。clang、lld、llvm のパッケージバージョンは揃えてください。 | `Dockerfile`（`LLVM_VERSION`、パッケージ名、ツールのシンボリックリンク） |
+| xwin | x64 デスクトップ向け SDK と CRT のファイル、Debug ライブラリ、ランタイム DLL の取得にバージョン 0.10.0 を使用しました。リリースアーカイブとチャネルマニフェストには、Dockerfile 内で別々の SHA-256 検証があります。 | `Dockerfile`（xwin の URL、アーカイブのハッシュ、フラグ） |
+| .NET SDK | `dotnet msbuild` と Linux 用 C++ ターゲットには、Ubuntu 24.04 上の 10.0.403 を使用しました。ベースイメージはダイジェストで固定されています。Windows の Visual Studio の MSBuild バージョンとは異なります。 | `Dockerfile`（`FROM` のタグとダイジェスト） |
+| vcpkg | `sample-app/vcpkg.json` はベースライン `65886d79ccce671dc24ffbf9a348836beacb7f6f` を固定し、`nlohmann-json` 3.12.0#2 を選択します。Docker はヘッダーのみの依存関係を `x64-linux` 用に復元し、`x64-windows` で期待されるパスにそのヘッダーをコピーします。Windows のバイナリ依存関係に対する一般的な方法ではありません。 | `sample-app/vcpkg.json` と `Dockerfile`（`VCPKG_COMMIT`）を併せて更新 |
 
-The Linux targets use `/MD` for Release and `/MDd` for Debug, `/imsvc` for
-SDK/CRT headers and lowercase SDK library names when present. Their current
-support is limited to the sample. In particular, the project declares
-`WholeProgramOptimization` and `SDLCheck`, but the Linux targets do not
-translate these settings; successful linking does not prove equivalence to a
-Visual Studio build.
+Linux 用ターゲットは、Release に `/MD`、Debug に `/MDd` を使用し、SDK/CRT ヘッダーには
+`/imsvc`、SDK ライブラリがある場合は小文字の名前を使用します。現在のサポート範囲は
+サンプルに限定されます。特に、プロジェクトは `WholeProgramOptimization` と
+`SDLCheck` を宣言していますが、Linux 用ターゲットはこれらの設定を変換しません。
+リンクに成功しても、Visual Studio ビルドと同等であることの証明にはなりません。
 
-### When Visual Studio or the Windows SDK changes
+### Visual Studio または Windows SDK を変更する場合
 
-1. On Windows, check the installed Visual Studio version and C++ workload,
-   selected platform toolset, SDK, target architecture, configuration,
-   runtime and project references. Inspect `.sln`, `.vcxproj` and
-   `Directory.Build.props`, then use Visual Studio project properties or an
-   MSBuild diagnostic log to verify evaluated values. For example:
+1. Windows で、インストール済みの Visual Studio のバージョンと C++ ワークロード、
+   選択されているプラットフォームツールセット、SDK、ターゲットアーキテクチャ、構成、
+   ランタイム、プロジェクト参照を確認します。`.sln`、`.vcxproj`、
+   `Directory.Build.props` を調べ、Visual Studio のプロジェクトプロパティまたは
+   MSBuild の診断ログで評価後の値を確認します。例:
 
    ```powershell
    msbuild sample-app/SmallChatBot.sln /m /p:Configuration=Release /p:Platform=x64 /v:diag /fl /flp:logfile=msbuild-release.log
    ```
 
-   Repeat for Debug. Check the Windows runner and `vs-version` range in
-   `.github/workflows/build.yml`; changing the Visual Studio version alone
-   does not change `v145`, the SDK, or the Linux channel. Decide whether the
-   Linux CRT must match the new toolset or whether a separately tested version
-   is acceptable. Do not infer compatibility from version numbers alone.
-2. Select a Microsoft Visual Studio channel appropriate to the desired CRT
-   and confirm that xwin supports it. For VS 17 release, fetch only the small
-   channel manifest first, record the final URL and hash, and inspect its
-   product version and referenced package manifest:
+   Debug でも繰り返します。`.github/workflows/build.yml` の Windows ランナーと
+   `vs-version` の範囲を確認してください。Visual Studio のバージョンだけを変更しても、
+   `v145`、SDK、Linux のチャネルは変わりません。Linux の CRT を新しいツールセットに
+   合わせる必要があるか、別途テストしたバージョンで許容できるかを判断してください。
+   バージョン番号だけから互換性を推測しないでください。
+2. 目的の CRT に適した Microsoft Visual Studio チャネルを選択し、xwin がそれを
+   サポートしていることを確認します。VS 17 リリースの場合は、まず小さなチャネル
+   マニフェストのみを取得し、最終的な URL とハッシュを記録して、製品バージョンと
+   参照先のパッケージマニフェストを確認します。
 
    ```sh
    curl --http1.1 -fsSL -o channel.json \
@@ -171,17 +169,16 @@ Visual Studio build.
    sha256sum channel.json
    ```
 
-   Use the version-specific channel for the target Visual Studio release
-   rather than assuming the VS 17 URL represents later releases. A local
-   SHA-256 records the exact downloaded bytes; it does not by itself establish
-   authenticity. Verify the origin and integrity against trusted Microsoft
-   metadata before pinning it. During the original investigation, the
-   referenced VS package manifest's declared size and hash did **not** match
-   the bytes returned by Microsoft. Investigate such a mismatch before
-   adopting an updated manifest; do not silently replace the expected hash.
-3. Before downloading SDK payloads, use a verified xwin binary to inspect the
-   candidate selection. Review its Microsoft license prompt first; after
-   accepting the terms, a non-interactive example is:
+   VS 17 の URL が以降のリリースを表すと仮定せず、対象の Visual Studio リリースの
+   バージョン固有のチャネルを使用してください。ローカルの SHA-256 はダウンロードした
+   バイト列を記録するだけで、真正性を証明するものではありません。固定する前に、信頼できる
+   Microsoft のメタデータで出所と完全性を確認してください。最初の調査では、参照先の
+   VS パッケージマニフェストに宣言されたサイズとハッシュが、Microsoft から返された
+   バイト列と一致 **しません** でした。更新したマニフェストを採用する前にこのような
+   不一致を調査し、期待するハッシュを黙って置き換えないでください。
+3. SDK ペイロードをダウンロードする前に、検証済みの xwin バイナリで候補の選択内容を
+   確認します。まず Microsoft のライセンスのプロンプトを確認してください。条件を受諾した
+   後の非対話式の例は次のとおりです。
 
    ```sh
    xwin --accept-license --temp --manifest channel.json \
@@ -189,60 +186,57 @@ Visual Studio build.
      --include-debug-runtime list
    ```
 
-   Replace the SDK version with the candidate listed in that manifest. For
-   xwin 0.10.0, the version key is `10.0.26100`, not `10.0.26100.0`.
-   Compare the SDK version against the Windows project's requirement and
-   inspect the selected CRT headers, x64 libraries, and Debug runtime versions.
-   The list can include Store-labelled packages required for shared headers
-   even with `desktop`; it is not a complete download-size estimate because
-   associated CAB files are discovered from the MSI files later. It may also
-   download the product manifest. Check free disk space and temporary cache
-   locations before proceeding.
-4. Choose the LLVM version supported by the selected CRT/STL, and verify
-   actual compilation rather than assuming the newest package is compatible.
-   If the STL rejects a compiler, inspect the diagnostic and STL's version
-   checks. Check that the selected Ubuntu release provides matching versions
-   of clang, lld and llvm; if the base image changes, update its tag **and**
-   digest and re-check the package versions and binary paths. Keep `/imsvc`
-   header ordering, resource headers, library name casing and SDK layout in
-   mind when diagnosing compilation or linking failures.
-5. Update the Dockerfile's xwin release URL and trusted checksum if xwin
-   changes, the versioned channel URL and verified channel SHA-256, SDK
-   version, and LLVM package names/version together. If explicitly selecting
-   a CRT, use an exact `--crt-version` key accepted by the selected xwin
-   manifest and confirm the list output; do not assume the displayed package
-   version is the correct key. The current `--include-debug-runtime` and
-   `--include-debug-libs` serve different purposes and are both needed for
-   the tested Debug configuration. Check SDK/CRT licensing, especially before
-   distributing an image containing non-redistributable Debug files.
-6. If dependencies are updated, choose a vcpkg commit whose baseline contains
-   the desired port versions. Update both `builtin-baseline` and
-   `VCPKG_COMMIT` to that commit, inspect the selected port and patches, and
-   restore on Windows and Linux. If a dependency is no longer header-only,
-   implement and validate a Windows-targeted vcpkg triplet instead of copying
-   Linux headers and assuming binary compatibility.
+   SDK バージョンは、そのマニフェストに一覧表示された候補に置き換えてください。
+   xwin 0.10.0 では、バージョンキーは `10.0.26100.0` ではなく `10.0.26100` です。
+   SDK バージョンを Windows プロジェクトの要件と比較し、選択された CRT ヘッダー、
+   x64 ライブラリ、Debug ランタイムのバージョンを確認します。`desktop` を指定しても、
+   共有ヘッダーに必要な Store ラベル付きパッケージが一覧に含まれる場合があります。
+   関連する CAB ファイルは後で MSI ファイルから検出されるため、この一覧は完全な
+   ダウンロードサイズの見積もりではありません。製品マニフェストもダウンロードされる
+   場合があります。進める前に、空きディスク容量と一時キャッシュの場所を確認してください。
+4. 選択した CRT/STL がサポートする LLVM バージョンを選び、最新のパッケージが互換だと
+   仮定せず、実際のコンパイルで確認します。STL がコンパイラを拒否した場合は、診断と
+   STL のバージョンチェックを調べます。選択した Ubuntu リリースが一致する clang、lld、
+   llvm のバージョンを提供することを確認し、ベースイメージを変更する場合はタグ **と**
+   ダイジェストを更新して、パッケージバージョンとバイナリのパスを再確認してください。
+   コンパイルやリンクの失敗を診断する際は、`/imsvc` のヘッダー順序、リソースヘッダー、
+   ライブラリ名の大文字小文字、SDK のレイアウトに留意してください。
+5. xwin が変わる場合は xwin のリリース URL と信頼できるチェックサム、バージョン固有の
+   チャネル URL と検証済みのチャネル SHA-256、SDK バージョン、LLVM のパッケージ名と
+   バージョンを、Dockerfile でまとめて更新します。CRT を明示的に選択する場合は、
+   選択した xwin のマニフェストが受け付ける正確な `--crt-version` キーを使用し、
+   一覧の出力で確認してください。表示されるパッケージバージョンが正しいキーだと
+   仮定しないでください。現在の `--include-debug-runtime` と `--include-debug-libs` は
+   目的が異なり、テスト済みの Debug 構成では両方が必要です。特に、再配布不可の Debug
+   ファイルを含むイメージを配布する前に、SDK/CRT のライセンスを確認してください。
+6. 依存関係を更新する場合は、目的のポートバージョンを含むベースラインの vcpkg コミットを
+   選択します。`builtin-baseline` と `VCPKG_COMMIT` の両方をそのコミットに更新し、
+   選択されたポートとパッチを確認して、Windows と Linux で復元してください。依存関係が
+   ヘッダーのみでなくなった場合は、Linux のヘッダーをコピーしてバイナリ互換性を仮定する
+   のではなく、Windows 向けの vcpkg トリプレットを実装して検証してください。
 
-### Validate the update
+### 更新の検証
 
-* Run `sh scripts/Test-LinuxMsbuild.sh` for the Linux target settings and run
-  the encoding checker tests with Windows PowerShell 5.1 and PowerShell 7.
-  The Linux settings test uses command stubs; it is not a compiler test.
-* Build the updated Docker image and run both `Release|x64` and `Debug|x64`
-  using the commands in [Linux container cross-compilation](#linux-container-cross-compilation).
-  Check that all three projects compile, both static libraries and the
-  executable are produced, and the executable is PE/COFF x64. Inspect imports
-  with `llvm-readobj --coff-imports`: confirm WinHTTP and Advapi32 plus the
-  expected Release CRT or Debug CRT/UCRT. Verify that the Debug import
-  libraries and runtime DLLs actually exist.
-* Build and run the existing tests on Windows with the intended Visual Studio
-  version and SDK. The Windows CI currently builds Release and runs its
-  redirected Unicode test; also explicitly validate Debug when changing the
-  toolchain. A cross-linked executable cannot be run directly on Linux.
-* Compare configuration-specific options and project references, not just
-  build success. Fix or explicitly document unsupported properties before
-  claiming equivalent builds. If resources are introduced, also validate
-  `llvm-rc` and the resulting resource link.
+* Linux ターゲット設定には `sh scripts/Test-LinuxMsbuild.sh` を実行し、エンコーディング
+  チェッカーのテストは Windows PowerShell 5.1 と PowerShell 7 で実行します。
+  Linux 設定のテストはコマンドのスタブを使用するもので、コンパイラのテストではありません。
+* 更新した Docker イメージをビルドし、
+  [Linux コンテナでのクロスコンパイル](#linux-コンテナでのクロスコンパイル)
+  のコマンドで `Release|x64` と `Debug|x64` の両方を実行します。3 つのプロジェクトが
+  すべてコンパイルされ、2 つの静的ライブラリと実行ファイルが生成され、実行ファイルが
+  PE/COFF x64 であることを確認します。`llvm-readobj --coff-imports` でインポートを調べ、
+  WinHTTP と Advapi32、および想定される Release CRT または Debug CRT/UCRT を確認して
+  ください。Debug のインポートライブラリとランタイム DLL が実際に存在することも確認
+  します。
+* 意図した Visual Studio のバージョンと SDK で、Windows 上の既存のテストをビルドして
+  実行します。Windows CI は現在 Release をビルドし、リダイレクトされた Unicode テストを
+  実行します。ツールチェーンを変更する場合は、Debug も明示的に検証してください。
+  クロスリンクされた実行ファイルは Linux 上で直接実行できません。
+* ビルドの成否だけでなく、構成ごとのオプションとプロジェクト参照を比較します。
+  ビルドが同等だと主張する前に、サポートされていないプロパティを修正するか、明示的に
+  文書化してください。リソースを導入する場合は、`llvm-rc` と、結果のリソースのリンクも
+  検証してください。
 
-Record the selected versions, channel URL/hash, compatibility and test results
-in the change. Use a disposable cache for trials, remove only artifacts created
-for the trial, and avoid downloading multiple SDKs when disk space is limited.
+選択したバージョン、チャネルの URL とハッシュ、互換性、テスト結果を変更内容に記録して
+ください。試行には使い捨てのキャッシュを使い、試行のために作成した成果物のみを削除し、
+ディスク容量が限られている場合は複数の SDK をダウンロードしないでください。
